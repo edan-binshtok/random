@@ -1,0 +1,2 @@
+# No external dependencies required.
+# Optional: python-dotenv if you want automatic .env loading.

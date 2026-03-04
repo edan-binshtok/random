@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hebrew Teacher AI for Kids</title>
+    <style>
+      :root {
+        --bg: #fff9ef;
+        --panel: #ffffff;
+        --text: #1f2a44;
+        --muted: #667085;
+        --accent: #3b82f6;
+        --accent-2: #16a34a;
+        --border: #e7eaf0;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+      .container {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 24px 16px 40px;
+      }
+      h1 {
+        margin: 0;
+      }
+      .subtitle {
+        margin-top: 8px;
+        color: var(--muted);
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 340px 1fr;
+        gap: 16px;
+        margin-top: 18px;
+      }
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 14px;
+      }
+      label {
+        display: block;
+        margin-top: 10px;
+        font-weight: 600;
+        font-size: 0.92rem;
+      }
+      input,
+      select,
+      textarea,
+      button {
+        width: 100%;
+        margin-top: 6px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        padding: 10px 12px;
+        font-size: 0.96rem;
+      }
+      textarea {
+        min-height: 90px;
+        resize: vertical;
+      }
+      button {
+        cursor: pointer;
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        font-weight: 700;
+      }
+      button.secondary {
+        background: #f2f5fb;
+        color: var(--text);
+        border: 1px solid var(--border);
+      }
+      .chips {
+        display: grid;
+        gap: 8px;
+        grid-template-columns: 1fr 1fr;
+        margin-top: 10px;
+      }
+      .chat {
+        display: flex;
+        flex-direction: column;
+        min-height: 550px;
+      }
+      .messages {
+        flex: 1;
+        background: #f8fbff;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 12px;
+        overflow-y: auto;
+      }
+      .bubble {
+        max-width: 86%;
+        border-radius: 12px;
+        padding: 10px 12px;
+        margin-bottom: 10px;
+        white-space: pre-wrap;
+        line-height: 1.4;
+      }
+      .bubble.teacher {
+        background: #e8f1ff;
+        border: 1px solid #cae0ff;
+      }
+      .bubble.student {
+        margin-left: auto;
+        background: #e8f9ef;
+        border: 1px solid #c6eace;
+      }
+      .row {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      .row input {
+        margin-top: 0;
+      }
+      .row button {
+        width: 130px;
+      }
+      .status {
+        margin-top: 8px;
+        font-size: 0.9rem;
+        color: var(--muted);
+      }
+      .good {
+        color: var(--accent-2);
+      }
+      .hidden {
+        display: none;
+      }
+      @media (max-width: 900px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Hebrew Teacher AI</h1>
+      <p class="subtitle">
+        A playful Hebrew tutor for kids, powered by an LLM when configured.
+      </p>
+
+      <div class="grid">
+        <section class="panel">
+          <h3>Student Setup</h3>
+          <label for="name">Child name</label>
+          <input id="name" placeholder="Noa" />
+
+          <label for="age">Age</label>
+          <input id="age" type="number" min="4" max="15" value="8" />
+
+          <label for="level">Level</label>
+          <select id="level">
+            <option value="beginner" selected>Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+          </select>
+
+          <label for="goal">Learning goal</label>
+          <textarea id="goal" placeholder="Learn colors and basic conversation"></textarea>
+
+          <button id="startBtn">Start lesson</button>
+
+          <div class="status" id="healthStatus">Checking AI status...</div>
+          <div class="status" id="progressStatus">Progress: no session yet.</div>
+
+          <div class="chips">
+            <button class="secondary quick" data-text="Let's practice Hebrew letters.">Letters</button>
+            <button class="secondary quick" data-text="Give me a mini Hebrew quiz.">Quiz</button>
+            <button class="secondary quick" data-text="Teach me a new Hebrew word about animals.">Animals</button>
+            <button class="secondary quick" data-text="Can we practice greetings in Hebrew?">Greetings</button>
+          </div>
+        </section>
+
+        <section class="panel chat">
+          <h3>Lesson Chat</h3>
+          <div class="messages" id="messages"></div>
+          <div class="row">
+            <input id="messageInput" placeholder="Type your message..." />
+            <button id="sendBtn">Send</button>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <script>
+      const messagesEl = document.getElementById("messages");
+      const messageInputEl = document.getElementById("messageInput");
+      const sendBtnEl = document.getElementById("sendBtn");
+      const startBtnEl = document.getElementById("startBtn");
+      const healthStatusEl = document.getElementById("healthStatus");
+      const progressStatusEl = document.getElementById("progressStatus");
+      const quickButtons = document.querySelectorAll(".quick");
+
+      let sessionId = null;
+
+      function addBubble(role, text) {
+        const div = document.createElement("div");
+        div.className = `bubble ${role}`;
+        div.textContent = text;
+        messagesEl.appendChild(div);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      }
+
+      async function callApi(path, method = "GET", payload = null) {
+        const options = { method, headers: { "Content-Type": "application/json" } };
+        if (payload) {
+          options.body = JSON.stringify(payload);
+        }
+        const response = await fetch(path, options);
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          const msg = data.error || `Request failed (${response.status})`;
+          throw new Error(msg);
+        }
+        return data;
+      }
+
+      async function refreshHealth() {
+        try {
+          const health = await callApi("/api/health");
+          if (health.llm_enabled) {
+            healthStatusEl.innerHTML = `AI mode: <span class="good">Live LLM enabled (${health.model})</span>`;
+          } else {
+            healthStatusEl.textContent = "AI mode: fallback engine (set OPENAI_API_KEY for live LLM).";
+          }
+        } catch (err) {
+          healthStatusEl.textContent = `Health check failed: ${err.message}`;
+        }
+      }
+
+      async function startSession() {
+        const payload = {
+          student_name: document.getElementById("name").value || "friend",
+          age: Number(document.getElementById("age").value || 8),
+          level: document.getElementById("level").value || "beginner",
+          goal: document.getElementById("goal").value || "learn beginner Hebrew",
+        };
+
+        try {
+          const result = await callApi("/api/session", "POST", payload);
+          sessionId = result.session_id;
+          messagesEl.innerHTML = "";
+          addBubble("teacher", result.welcome_message);
+          progressStatusEl.textContent = `Progress: session started for ${result.student.name}.`;
+          messageInputEl.focus();
+        } catch (err) {
+          addBubble("teacher", `Could not start session: ${err.message}`);
+        }
+      }
+
+      async function sendMessage(customText = null) {
+        const rawMessage = customText || messageInputEl.value;
+        const message = (rawMessage || "").trim();
+        if (!message) {
+          return;
+        }
+        if (!sessionId) {
+          addBubble("teacher", "Start a lesson first, then we can chat.");
+          return;
+        }
+
+        addBubble("student", message);
+        messageInputEl.value = "";
+
+        try {
+          const result = await callApi("/api/chat", "POST", {
+            session_id: sessionId,
+            message,
+          });
+          addBubble("teacher", result.reply);
+          const turns = result.progress.turn_count;
+          const words = result.progress.learned_words_count;
+          const mode = result.used_llm ? "LLM" : "fallback";
+          progressStatusEl.textContent = `Progress: ${turns} turns, ${words} Hebrew words seen (${mode} mode).`;
+        } catch (err) {
+          addBubble("teacher", `Oops, something went wrong: ${err.message}`);
+        }
+      }
+
+      startBtnEl.addEventListener("click", startSession);
+      sendBtnEl.addEventListener("click", () => sendMessage());
+      messageInputEl.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          sendMessage();
+        }
+      });
+
+      quickButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          sendMessage(button.dataset.text);
+        });
+      });
+
+      refreshHealth();
+    </script>
+  </body>
+</html>
