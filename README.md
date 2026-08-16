@@ -1,44 +1,82 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Hebrew for Kids - AI Teacher 📚
 
-## Available Scripts
+A fun, interactive web app that teaches Hebrew to children using an AI teacher powered by LLMs. The AI adapts to each child dynamically—patient, encouraging, and ready to teach letters, numbers, colors, greetings, and more!
 
-In the project directory, you can run:
+## Features
 
-### `npm start`
+- **Dynamic AI Teacher**: Uses GPT-4o-mini to respond naturally to kids' questions and interests
+- **Kid-Friendly Interface**: Colorful, playful design with large buttons and clear text
+- **Hebrew + English**: Teaches Hebrew words and phrases with English explanations
+- **Conversation-Based Learning**: Kids learn through natural dialogue, games, and questions
+- **Safe & Supportive**: Patient prompts designed for young learners (ages 4–10)
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## Setup
 
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
+### 1. Install dependencies
 
-### `npm test`
+```bash
+npm install
+# or
+yarn install
+```
 
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### 2. Configure the API key
 
-### `npm run build`
+Create a `.env` file in the project root (copy from `.env.example`):
 
-Builds the app for production to the `build` folder.<br>
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```bash
+cp .env.example .env
+```
 
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
+Edit `.env` and add your OpenAI API key:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```
+OPENAI_API_KEY=sk-your-actual-key-here
+```
 
-### `npm run eject`
+Get an API key at [platform.openai.com/api-keys](https://platform.openai.com/api-keys).
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+### 3. Run the app
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```bash
+npm start
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+This starts both the React frontend (port 3000) and the backend server (port 3001). Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+## Project Structure
 
-## Learn More
+```
+├── server/           # Backend - proxies LLM requests, keeps API key secure
+│   └── index.js
+├── src/
+│   ├── teacherEngine.ts   # API client for chat
+│   ├── components/        # Chat UI components
+│   ├── App.tsx            # Main app with chat interface
+│   └── ...
+└── public/
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## How It Works
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+1. **Frontend**: Kids interact via a chat interface with suggestion chips for common topics
+2. **Backend**: Express server receives messages and forwards them to OpenAI's API
+3. **AI Teacher**: A custom system prompt instructs the model to act as a warm, patient Hebrew teacher for kids
+4. **Response**: The AI's reply streams back and appears in the chat
+
+The teacher prompt guides the AI to:
+- Use simple, age-appropriate language
+- Mix Hebrew and English
+- Be encouraging and never harsh
+- Teach through games, songs, and conversation
+- Adapt to the child's level
+
+## Tech Stack
+
+- **Frontend**: React, TypeScript
+- **Backend**: Node.js, Express
+- **LLM**: OpenAI GPT-4o-mini (via API)
+
+## License
+
+MIT
